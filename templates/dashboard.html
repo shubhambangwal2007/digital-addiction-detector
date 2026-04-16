@@ -1,94 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usage Dashboard - Digital Addiction Detector</title>
+    <meta charset="UTF-8"><title>Dashboard - Digital Detox</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; }
-        .container { max-width: 1000px; margin: 50px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1, h2 { color: #2c3e50; text-align: center; }
-        .nav-links { text-align: center; margin-bottom: 30px; }
-        .nav-links a { margin: 0 15px; text-decoration: none; color: #3498db; font-weight: bold; }
-        .chart-container { margin-bottom: 50px; height: 400px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f8f9fa; }
-        .risk-Low { color: #2ecc71; font-weight: bold; }
-        .risk-Medium { color: #f1c40f; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 12px; }
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .card { padding: 20px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px; }
+        h1, h2 { color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        .risk-Low { color: #27ae60; font-weight: bold; }
+        .risk-Medium { color: #f39c12; font-weight: bold; }
         .risk-High { color: #e74c3c; font-weight: bold; }
-        .btn-clear { display: block; width: fit-content; margin: 20px auto; padding: 10px 20px; background-color: #e74c3c; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Usage History Dashboard</h1>
-        <div class="nav-links">
-            <a href="/">← Back to Analyzer</a>
+        <h1>📊 Your Progress Dashboard</h1>
+        <a href="/">← Back to Analyzer</a>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>Addiction Score Trend</h2>
+                <div style="height: 300px;"><canvas id="trendChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h2>Latest App Usage</h2>
+                <div style="height: 300px;"><canvas id="pieChart"></canvas></div>
+            </div>
         </div>
 
-        <div class="chart-container">
-            <canvas id="scoreChart"></canvas>
+        <div class="card">
+            <h2>Recent History</h2>
+            <table>
+                <thead>
+                    <tr><th>Date</th><th>Score</th><th>Risk</th><th>Total (h)</th><th>Sleep (h)</th></tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                    <tr>
+                        <td>{{ r.timestamp.strftime('%b %d, %H:%M') }}</td>
+                        <td>{{ r.score }}</td>
+                        <td class="risk-{{ r.risk }}">{{ r.risk }}</td>
+                        <td>{{ r.screen_time }}</td>
+                        <td>{{ r.sleep }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <h2>Recent Records</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Screen Time</th>
-                    <th>Social Media</th>
-                    <th>Score</th>
-                    <th>Risk Level</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in records %}
-                <tr>
-                    <td>{{ record.timestamp.strftime('%b %d, %H:%M') }}</td>
-                    <td>{{ record.screen_time }}h</td>
-                    <td>{{ record.social_media }}h</td>
-                    <td>{{ record.score }}</td>
-                    <td class="risk-{{ record.risk }}">{{ record.risk }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <a href="/clear_history" class="btn-clear" onclick="return confirm('Are you sure you want to delete all history?')">Clear All History</a>
     </div>
 
     <script>
-        const ctx = document.getElementById('scoreChart').getContext('2d');
-        const scoreChart = new Chart(ctx, {
+        // Trend Chart
+        new Chart(document.getElementById('trendChart'), {
             type: 'line',
             data: {
                 labels: {{ dates|tojson }},
+                datasets: [{ label: 'Score', data: {{ scores|tojson }}, borderColor: '#3498db', fill: true }]
+            },
+            options: { maintainAspectRatio: false }
+        });
+
+        // Pie Chart
+        new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: {{ app_data.keys()|list|tojson }},
                 datasets: [{
-                    label: 'Addiction Score',
-                    data: {{ scores|tojson }},
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3
+                    data: {{ app_data.values()|list|tojson }},
+                    backgroundColor: ['#e74c3c', '#2c3e50', '#f1c40f', '#2980b9', '#27ae60']
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 1000,
-                        title: { display: true, text: 'Score' }
-                    },
-                    x: {
-                        title: { display: true, text: 'Time' }
-                    }
-                }
-            }
+            options: { maintainAspectRatio: false }
         });
     </script>
 </body>
