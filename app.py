@@ -67,6 +67,14 @@ def load_user(user_id):
 
 # --- AI Logic Helpers ---
 
+def ensure_models():
+    if not os.path.exists('models/reg_model.pkl'):
+        print("Models not found. Training now...")
+        import subprocess
+        subprocess.run(["python", "train_model.py"])
+
+ensure_models()
+
 reg_model = joblib.load('models/reg_model.pkl')
 scaler = joblib.load('models/scaler.pkl')
 kmeans = joblib.load('models/kmeans.pkl')
