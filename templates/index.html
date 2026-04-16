@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Addiction Detector</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; }
+        .container { max-width: 800px; margin: 50px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background-color: #3498db; color: white; border: none; border-radius: 6px; font-size: 1.1em; cursor: pointer; transition: background 0.3s ease; }
+        button:hover { background-color: #2980b9; }
+        .result-container { margin-top: 40px; padding: 25px; border-top: 2px solid #eee; text-align: center; }
+        .score-box { font-size: 2em; font-weight: bold; margin: 15px 0; }
+        .risk-badge { padding: 8px 20px; border-radius: 20px; font-size: 0.9em; font-weight: bold; text-transform: uppercase; display: inline-block; margin-bottom: 15px; }
+        .risk-Low { background-color: #d4edda; color: #155724; }
+        .risk-Medium { background-color: #fff3cd; color: #856404; }
+        .risk-High { background-color: #f8d7da; color: #721c24; }
+        .visual-report { margin-top: 25px; border-radius: 8px; max-width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Digital Addiction Detector</h1>
+        <p style="text-align: center; color: #666;">Understand your digital usage and get a personalized control plan.</p>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label>Daily Total Screen Time (Hours):</label>
+                <input type="number" step="0.1" name="screen_time" placeholder="e.g. 6.5" required>
+            </div>
+            <div class="form-group">
+                <label>Social Media Usage (Hours):</label>
+                <input type="number" step="0.1" name="social_media" placeholder="e.g. 4.0" required>
+            </div>
+            <div class="form-group">
+                <label>Productivity App Usage (Hours):</label>
+                <input type="number" step="0.1" name="productivity" placeholder="e.g. 1.0" required>
+            </div>
+            <div class="form-group">
+                <label>Daily Sleep Time (Hours):</label>
+                <input type="number" step="0.1" name="sleep" placeholder="e.g. 7.0" required>
+            </div>
+            <button type="submit">Analyze Usage</button>
+        </form>
+
+        {% if result %}
+            <div class="result-container">
+                <h2>Analysis Results</h2>
+                <div class="score-box">Addiction Score: {{ result.score }} / 1000</div>
+                <div class="risk-badge risk-{{ result.risk }}">Risk Level: {{ result.risk }}</div>
+                <p><strong>Suggestion:</strong> {{ result.advice }}</p>
+                <img class="visual-report" src="data:image/png;base64,{{ result.image }}" alt="Visual Report">
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
