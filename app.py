@@ -11,40 +11,31 @@ import os
 
 app = Flask(__name__)
 
-# Load models (Check if they exist first)
-if os.path.exists('models/reg_model.pkl'):
+# Global placeholders
+reg_model = None
+scaler = None
+kmeans = None
+risk_mapping = None
+
+def load_models():
+    global reg_model, scaler, kmeans, risk_mapping
+    if not os.path.exists('models/reg_model.pkl'):
+        print("Training models...")
+        import subprocess
+        subprocess.run(["python", "train_model.py"])
+    
     reg_model = joblib.load('models/reg_model.pkl')
     scaler = joblib.load('models/scaler.pkl')
     kmeans = joblib.load('models/kmeans.pkl')
     risk_mapping = joblib.load('models/risk_mapping.pkl')
-else:
-    print("Warning: Models not found. Run 'train_model.py' first.")
-
-def generate_visual_report(score, screen_time, risk):
-    plt.figure(figsize=(6, 4))
-    
-    # Simple Gauge Chart (mock)
-    colors = ['#2ecc71', '#f1c40f', '#e74c3c']
-    risk_color = colors[0] if risk == 'Low' else colors[1] if risk == 'Medium' else colors[2]
-    
-    plt.barh(['Addiction Level'], [score], color=risk_color)
-    plt.xlim(0, 1000)
-    plt.title(f"Score: {score:.0f}/1000 ({risk} Risk)")
-    plt.grid(True, axis='x', linestyle='--', alpha=0.6)
-    
-    # Save to buffer
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png', bbox_inches='tight')
-    buf.seek(0)
-    img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-    plt.close()
-    return img_base64
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     result = None
     if request.method == 'POST':
         try:
+            if reg_model is None:
+                load_models()
             # Get data from user
             daily_screen_time = float(request.form['screen_time'])
             social_media_usage = float(request.form['social_media'])

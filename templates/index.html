@@ -49,11 +49,17 @@
 
         {% if result %}
             <div class="result-container">
-                <h2>Analysis Results</h2>
-                <div class="score-box">Addiction Score: {{ result.score }} / 1000</div>
-                <div class="risk-badge risk-{{ result.risk }}">Risk Level: {{ result.risk }}</div>
-                <p><strong>Suggestion:</strong> {{ result.advice }}</p>
-                <img class="visual-report" src="data:image/png;base64,{{ result.image }}" alt="Visual Report">
+                {% if result.error %}
+                    <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 6px; border: 1px solid #f5c6cb;">
+                        <strong>Error:</strong> {{ result.error }}
+                    </div>
+                {% else %}
+                    <h2>Analysis Results</h2>
+                    <div class="score-box">Addiction Score: {{ result.score }} / 1000</div>
+                    <div class="risk-badge risk-{{ result.risk }}">Risk Level: {{ result.risk }}</div>
+                    <p><strong>Suggestion:</strong> {{ result.advice }}</p>
+                    <img class="visual-report" src="data:image/png;base64,{{ result.image }}" alt="Visual Report">
+                {% endif %}
             </div>
         {% endif %}
     </div>
