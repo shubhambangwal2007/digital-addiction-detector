@@ -4,5 +4,6 @@ matplotlib
 seaborn
 scikit-learn
 flask
+flask-sqlalchemy
 joblib
 gunicorn

@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 import pandas as pd
 import numpy as np
 import joblib
@@ -10,6 +12,26 @@ import base64
 import os
 
 app = Flask(__name__)
+
+# Database Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///usage_history.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# Database Model
+class UsageRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    screen_time = db.Column(db.Float, nullable=False)
+    social_media = db.Column(db.Float, nullable=False)
+    productivity = db.Column(db.Float, nullable=False)
+    sleep = db.Column(db.Float, nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+    risk = db.Column(db.String(20), nullable=False)
+
+# Create Database tables
+with app.app_context():
+    db.create_all()
 
 # Global placeholders
 reg_model = None
@@ -56,6 +78,7 @@ def index():
         try:
             if reg_model is None:
                 load_models()
+            
             # Get data from user
             daily_screen_time = float(request.form['screen_time'])
             social_media_usage = float(request.form['social_media'])
@@ -71,6 +94,18 @@ def index():
             user_scaled = scaler.transform([[daily_screen_time, score]])
             cluster = kmeans.predict(user_scaled)[0]
             risk = risk_mapping[cluster]
+            
+            # Save to Database
+            new_record = UsageRecord(
+                screen_time=daily_screen_time,
+                social_media=social_media_usage,
+                productivity=productivity_usage,
+                sleep=sleep_time,
+                score=round(score),
+                risk=risk
+            )
+            db.session.add(new_record)
+            db.session.commit()
             
             # Suggestions
             if risk == "Low":
@@ -93,6 +128,20 @@ def index():
             result = {'error': str(e)}
             
     return render_template('index.html', result=result)
+
+@app.route('/dashboard')
+def dashboard():
+    records = UsageRecord.query.order_by(UsageRecord.timestamp.desc()).all()
+    # Prepare data for Chart.js
+    dates = [r.timestamp.strftime("%Y-%m-%d %H:%M") for r in records[::-1]]
+    scores = [r.score for r in records[::-1]]
+    return render_template('dashboard.html', records=records, dates=dates, scores=scores)
+
+@app.route('/clear_history')
+def clear_history():
+    UsageRecord.query.delete()
+    db.session.commit()
+    return redirect(url_for('dashboard'))
 
 @app.after_request
 def add_header(response):
