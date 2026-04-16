@@ -29,6 +29,26 @@ def load_models():
     kmeans = joblib.load('models/kmeans.pkl')
     risk_mapping = joblib.load('models/risk_mapping.pkl')
 
+def generate_visual_report(score, screen_time, risk):
+    plt.figure(figsize=(6, 4))
+    
+    # Simple Gauge Chart (mock)
+    colors = ['#2ecc71', '#f1c40f', '#e74c3c']
+    risk_color = colors[0] if risk == 'Low' else colors[1] if risk == 'Medium' else colors[2]
+    
+    plt.barh(['Addiction Level'], [score], color=risk_color)
+    plt.xlim(0, 1000)
+    plt.title(f"Score: {score:.0f}/1000 ({risk} Risk)")
+    plt.grid(True, axis='x', linestyle='--', alpha=0.6)
+    
+    # Save to buffer
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    plt.close()
+    return img_base64
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     result = None
