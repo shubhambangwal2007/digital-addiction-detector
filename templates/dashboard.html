@@ -36,7 +36,7 @@
             <h2>Recent History</h2>
             <table>
                 <thead>
-                    <tr><th>Date</th><th>Score</th><th>Risk</th><th>Total (h)</th><th>Sleep (h)</th></tr>
+                    <tr><th>Date</th><th>Score</th><th>Risk</th><th>Suggestion</th><th>Total (h)</th><th>Sleep (h)</th></tr>
                 </thead>
                 <tbody>
                     {% for r in records %}
@@ -44,6 +44,7 @@
                         <td>{{ r.timestamp.strftime('%b %d, %H:%M') }}</td>
                         <td>{{ r.score }}</td>
                         <td class="risk-{{ r.risk }}">{{ r.risk }}</td>
+                        <td><small>{{ r.suggestion if r.suggestion else "N/A" }}</small></td>
                         <td>{{ r.screen_time }}</td>
                         <td>{{ r.sleep }}</td>
                     </tr>

@@ -57,6 +57,9 @@
                 {% else %}
                     <h3>Score: {{ result.score }} / 1000</h3>
                     <p>Risk: <b>{{ result.risk }}</b></p>
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #ffeeba;">
+                        💡 <b>Suggestion:</b> {{ result.suggestion }}
+                    </div>
                     <img src="data:image/png;base64,{{ result.image }}" style="max-width: 100%;">
                 {% endif %}
             </div>
