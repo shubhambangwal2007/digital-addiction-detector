@@ -65,6 +65,10 @@ def get_advice(score, social_usage):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Create models if they don't exist
+if not os.path.exists('models/reg_model.pkl'):
+    import train_model
+
 # Load ML models
 reg_model = joblib.load('models/reg_model.pkl')
 scaler = joblib.load('models/scaler.pkl')
